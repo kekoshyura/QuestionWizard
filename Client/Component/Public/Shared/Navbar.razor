@@ -1,0 +1,28 @@
+﻿<h3>Navbar</h3>
+
+@code {
+    [Inject] public NavigationManager NavigationManager { get; set; }
+    private const string HomePageUri = "/";
+    private const string QuestionPageUri = "/question";
+
+    private bool IsPageActive(string pageToCheckUri) {
+        string[] currentUriSplit = NavigationManager.Uri.Split('/').Skip(3).ToArray();
+
+        if(pageToCheckUri == HomePageUri) {
+            if (currentUriSplit.Last().Length == 0)
+                return true;
+        }
+        else {
+            string[] pageToCheckUriSptilBetweenSlashes = pageToCheckUri.Split('/').Skip(1).ToArray();
+            foreach(string currentUriPart in currentUriSplit) {
+                foreach(string pageToCheckUriPart in pageToCheckUriSptilBetweenSlashes) {
+                    if (pageToCheckUri == currentUriPart) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+}
