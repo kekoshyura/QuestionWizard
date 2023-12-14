@@ -36,7 +36,7 @@
             string[] pageToCheckUriSptilBetweenSlashes = pageToCheckUri.Split('/').Skip(1).ToArray();
             foreach(string currentUriPart in currentUriSplit) {
                 foreach(string pageToCheckUriPart in pageToCheckUriSptilBetweenSlashes) {
-                    if (pageToCheckUri == currentUriPart) {
+                    if (pageToCheckUriPart == currentUriPart) {
                         return true;
                     }
                 }
