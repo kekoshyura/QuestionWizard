@@ -11,15 +11,33 @@
             <p>Click a section card to view its questions</p>
             
             <div class="row">
-                <div class="col-md-4">
-                   <SectionCard />
-                </div>
+                @if(databaseCache.Sections != null) {
+                    foreach(var section in databaseCache.Sections) {
+                        <div class="col-md-4">
+                            <SectionCard Section="section"/>
+                        </div>
+                    }
+                }
             </div>
         </div>
     </div>
 </main>
 <Footer/>
 
-@code {
 
+@implements IDisposable
+@code {
+    [Inject] DatabaseCache databaseCache { get; set; }
+
+    protected override async Task OnInitializedAsync() {
+        databaseCache.OnSectionsDataChanged += StateHasChanged;
+
+        if(databaseCache.Sections == null) {
+            await databaseCache.GetSectionsFromDbCache();
+        }
+    }
+
+    public void Dispose() {
+        databaseCache.OnSectionsDataChanged -= StateHasChanged;
+    }
 }
