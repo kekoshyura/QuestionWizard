@@ -1,0 +1,46 @@
+﻿@page "/surveys/{surveyId}a"
+
+@using Client.Component.Public.Shared
+@using Client.Component.Public.Section
+
+<Navbar></Navbar>
+
+<main class="container min-vh-90 py-5">
+    <div class="row">
+        <div class="col">
+            <h1 class="my-3">Surveys</h1>
+            <p>Click a section card to view its questions</p>
+            
+            <div class="row">
+                @if(databaseCache.Surveys != null) {
+                    foreach(var survey in databaseCache.Surveys) {
+                            <div class="col-md-4">
+                                <SurveyCard Survey="survey" />
+                            </div>
+                        }
+                        
+                    }
+            </div>
+        </div>
+    </div>
+</main>
+
+<Footer></Footer>
+
+
+@implements IDisposable
+@code {
+    [Inject] SurveysDatabaseCache databaseCache { get; set; }
+
+    protected override async Task OnInitializedAsync() {
+        databaseCache.OnSurveysDataChanged += StateHasChanged;
+
+        if (databaseCache.Surveys == null) {
+            await databaseCache.GetSectionsFromDbCache();
+        }
+    }
+
+    public void Dispose() {
+        databaseCache.OnSurveysDataChanged -= StateHasChanged;
+    }
+}

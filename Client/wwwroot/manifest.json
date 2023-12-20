@@ -1,6 +1,6 @@
 {
-  "name": "Client",
-  "short_name": "Client",
+  "name": "Question Wizard",
+  "short_name": "Question Wizard",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",

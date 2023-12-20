@@ -1,0 +1,17 @@
+﻿<div class="card shadow mb-2">
+    <div class="card-body">
+        <h3 class="card-title">@Survey.Title</h3>
+        <p class="card-text">@Survey.Description</p>
+    </div>
+
+    
+    <button onclick="NavigateToSurveys()" class="btn btn-primary stretched-link">View section</button>
+</div>
+
+@inject NavigationManager navigationManager
+
+@code {
+    [Parameter] public SurveyModel Survey { get; set; }
+
+    
+}

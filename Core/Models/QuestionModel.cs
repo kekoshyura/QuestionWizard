@@ -1,10 +1,15 @@
-﻿using static Core.Common.Common;
+﻿using System.ComponentModel.DataAnnotations;
+using static Core.Common.Common;
 
 namespace Core.Models {
     public class QuestionModel {
         public int Id { get; set; }
         public string Text { get; set; }
         public ControlType ControlType { get; set; }
-        public ICollection<QuestionOptionModel> Options { get; set; }
+        [Required]
+        public int SurveyId { get; set; }
+        public SurveyModel Survey { get; set; }
+
+        public List<QuestionOptionModel> QuestionOptions { get; set; }
     }
 }

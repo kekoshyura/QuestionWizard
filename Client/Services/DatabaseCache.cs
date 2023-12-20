@@ -19,6 +19,8 @@ namespace Client.Services {
             }
         }
 
+
+
         private bool _gettingSectionsFromDbCache = false;
 
         internal async Task GetSectionsFromDbCache() {

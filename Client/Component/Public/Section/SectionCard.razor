@@ -1,16 +1,18 @@
 ﻿
 
 <div class="card shadow mb-2">
-    <img src="@($"{ApiEndpoints.ServerBaseUrl}/wwwroot/{Section.SectionImagePath}")" class="card-img-top" alt="Category thumbnail image" />
+    <img src="@($"{ApiEndpoints.ServerBaseUrl}/wwwroot/assets/img/other/36421940-placeholder.jpga")" class="card-img-top" alt="Category thumbnail image" />
     <div class="card-body">
         <h3 class="card-title">@Section.Title</h3>
         <p class="card-text">@Section.Description</p>
     </div>
 
-    <a href="/" class="btn btn-primary stretched-link">View section</a>
+    <a href="/surveys" class="btn btn-primary stretched-link">View Surveys</a>
 </div>
 
 
 @code{
     [Parameter] public SectionModel Section { get; set; }
+
+    
 }
