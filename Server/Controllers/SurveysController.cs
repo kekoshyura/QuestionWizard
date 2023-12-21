@@ -100,6 +100,8 @@ namespace Server.Controllers {
                 }
 
                 SurveyModel surveyToUpdate = _mapper.Map<SurveyModel>(surveyToUpdateDTO);
+                _context.Entry(oldSurvey).State = EntityState.Detached;
+
                 _context.Surveys.Update(surveyToUpdate);
 
                 bool changesPersistedToDatabase = await PersistsChangesToDatabase();
@@ -124,7 +126,7 @@ namespace Server.Controllers {
                     return BadRequest(ModelState);
                 }
 
-                bool exists = await _context.Sections.AnyAsync(x => x.Id == id);
+                bool exists = await _context.Surveys.AnyAsync(x => x.Id == id);
                 if (exists == false) {
                     return NotFound();
                 }
