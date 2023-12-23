@@ -1,0 +1,53 @@
+﻿<div class="admin-area-sidebar bg-dark d-flex flex-column flex-shrink-0 p-3">
+    <a href="/" class="btn bg-lightgray hover-bg-white text-dark my-4 shadow">
+        <i class="fas fa-eye"></i> <p class="md-and-smaller-d-none d-inline">Public site</p>
+    </a>
+
+    <hr class="my-4 text-white" />
+
+    <ul class="nav nav-pills mb-auto">
+        <li class="nav-item w-100">
+            <a href="@adminIndexPageUri" class="nav-link w-100 shadow text-center @(IsPageActive(adminIndexPageUri) ? "active" : "text-white")">
+                <i class="fas fa-home"></i><p class="md-and-smaller-d-none d-inline"> Overview</p>
+            </a>
+        </li>
+        <li class="nav-item w-100 mt-4">
+            <a href="@s_adminCategoryPageUri" class="nav-link w-100 shadow text-center @(IsPageActive(s_adminCategoryPageUri) ? "active" : "text-white")">
+                <i class="fas fa-th"></i><p class="md-and-smaller-d-none d-inline"> Categories</p>
+            </a>
+        </li>
+        <li class="nav-item w-100 mt-4">
+            <a href="@s_adminSurveyPageUri" class="nav-link w-100 shadow text-center @(IsPageActive(s_adminSurveyPageUri) ? "active" : "text-white")">
+                <i class="fas fa-poll"></i><p class="md-and-smaller-d-none d-inline"> Surveys</p>
+            </a>
+        </li>
+    </ul>
+</div>
+
+@code {
+    [Inject] public NavigationManager navigationManager { get; set; }
+    
+    private const string adminIndexPageUri = "/admin";
+    private static string s_adminCategoryPageUri = $"{adminIndexPageUri}/categories";
+    private static string s_adminSurveyPageUri = $"{adminIndexPageUri}/surveys";
+
+    private bool IsPageActive(string pageToCheckUri) {
+        string[] currentUriSplit = navigationManager.Uri.Split('/').Skip(2).ToArray();
+
+        if (pageToCheckUri == adminIndexPageUri) {
+        if (currentUriSplit.Last() == "admin")
+            return true;
+        }
+        else {
+            string[] pageToCheckUriSptilBetweenSlashes = pageToCheckUri.Split('/').Skip(2).ToArray();
+            foreach (string currentUriPart in currentUriSplit) {
+                foreach (string pageToCheckUriPart in pageToCheckUriSptilBetweenSlashes) {
+                    if (pageToCheckUriPart == currentUriPart) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+}

@@ -32,7 +32,17 @@ body{
     padding: 10vh;
 }
 
-.custom-black{
+
+
+.bg-lightgray {
+    background-color: rgb(235, 235, 235);
+}
+
+.hover-bg-white:hover {
+    background-color: rgb(16, 18, 20);
+}
+
+.custom-black {
     color: black;
 }
 
@@ -122,9 +132,7 @@ body {
     max-width: 50%;
 }
 
-.hover-bg-white:hover {
-    background-color: #fff;
-}
+
 
 /* 5. Custom responsive styles */
 @media (max-width: 992px) {
