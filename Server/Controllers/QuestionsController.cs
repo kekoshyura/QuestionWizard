@@ -7,54 +7,38 @@ using Server.Data;
 namespace Server.Controllers {
     [Route("api/[controller]")]
     [ApiController]
-    public class SurveysController : ControllerBase {
+    public class QuestionsController : ControllerBase {
+
         private readonly DataContext _context;
         private readonly IMapper _mapper;
 
-        public SurveysController(DataContext context, IMapper mapper) {
-            _context = context;
+        public QuestionsController(IMapper mapper, DataContext context) {
             _mapper = mapper;
+            _context = context;
         }
-
-        #region Utility methods
-        [NonAction]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<bool> PersistsChangesToDatabase() {
-            int amountChanges = await _context.SaveChangesAsync();
-            return amountChanges > 0;
-        }
-
-        [NonAction]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<SurveyModel> GetSurveyById(int surveyId) {
-            var surveyToGet = await _context.Surveys.FirstAsync(s => s.Id == surveyId);
-            return surveyToGet;
-        }
-        #endregion
 
         #region CRUD operations
         [HttpGet]
         public async Task<IActionResult> Get() {
 
-            List<SurveyModel> sections = await _context.Surveys
-                                                    .Include(x => x.Section)
-                                                    .ThenInclude(x => x.Surveys)
-                                                    .ThenInclude(x => x.Questions)
-                                                    .ThenInclude(x => x.QuestionOptions)
-                                                    .ToListAsync();
-            return Ok(sections);
+            List<QuestionModel> questions = await _context.Questions
+                                                        .Include(x => x.QuestionOptions)
+                                                        .ToListAsync();
+
+            return Ok(questions);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id) {
-            SurveyModel section = await GetSurveyById(id);
+            QuestionModel section = await GetQuestionById(id);
             return Ok(section);
         }
+
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] SurveyDTO surveyToCreateDTO) {
+        public async Task<IActionResult> Create([FromBody] QuestionDTO questionToCreateDTO) {
             try {
 
-                if (surveyToCreateDTO == null) {
+                if (questionToCreateDTO == null) {
                     return BadRequest(ModelState);
                 }
 
@@ -62,9 +46,9 @@ namespace Server.Controllers {
                     return BadRequest(ModelState);
                 }
 
-                SurveyModel syrveyToCreate = _mapper.Map<SurveyModel>(surveyToCreateDTO);
+                QuestionModel questionToCreate = _mapper.Map<QuestionModel>(questionToCreateDTO);
 
-                await _context.Surveys.AddAsync(syrveyToCreate);
+                await _context.Questions.AddAsync(questionToCreate);
 
                 bool changesPersistedToDatabase = await PersistsChangesToDatabase();
                 if (changesPersistedToDatabase == false) {
@@ -72,7 +56,7 @@ namespace Server.Controllers {
                 }
 
                 else {
-                    return Created("Create", syrveyToCreate);
+                    return Created("Create", questionToCreate);
                 }
             }
             catch (Exception e) {
@@ -82,17 +66,15 @@ namespace Server.Controllers {
 
         }
 
-
-
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] SurveyDTO surveyToUpdateDTO) {
+        public async Task<IActionResult> Update(int id, [FromBody] QuestionDTO questionToCreateDTO) {
             try {
-                if (id < 1 || surveyToUpdateDTO == null || id != surveyToUpdateDTO.Id) {
+                if (id < 1 || questionToCreateDTO == null || id != questionToCreateDTO.Id) {
                     return BadRequest(ModelState);
                 }
 
-                var oldSurvey = await _context.Surveys.FindAsync(id);
-                if (oldSurvey == null) {
+                var oldQuestion = await _context.Questions.FindAsync(id);
+                if (oldQuestion == null) {
                     return NotFound();
                 }
 
@@ -100,17 +82,17 @@ namespace Server.Controllers {
                     return BadRequest(ModelState);
                 }
 
-                SurveyModel surveyToUpdate = _mapper.Map<SurveyModel>(surveyToUpdateDTO);
-                _context.Entry(oldSurvey).State = EntityState.Detached;
+                QuestionModel questionToUpdate = _mapper.Map<QuestionModel>(questionToCreateDTO);
+                _context.Entry(oldQuestion).State = EntityState.Detached;
 
-                _context.Surveys.Update(surveyToUpdate);
+                _context.Questions.Update(questionToUpdate);
 
                 bool changesPersistedToDatabase = await PersistsChangesToDatabase();
                 if (changesPersistedToDatabase == false) {
                     return StatusCode(500, $"Something went wrong on our side. Please contact to administrator.");
                 }
                 else {
-                    return Created("Create", surveyToUpdate);
+                    return Created("Create", questionToUpdate);
                 }
             }
             catch (Exception e) {
@@ -127,7 +109,7 @@ namespace Server.Controllers {
                     return BadRequest(ModelState);
                 }
 
-                bool exists = await _context.Surveys.AnyAsync(x => x.Id == id);
+                bool exists = await _context.Questions.AnyAsync(x => x.Id == id);
                 if (exists == false) {
                     return NotFound();
                 }
@@ -136,12 +118,12 @@ namespace Server.Controllers {
                     return BadRequest(ModelState);
                 }
 
-                var sectionToDelete = await GetSurveyById(id);
-                if (sectionToDelete == null) {
+                var questionToDelete = await GetQuestionById(id);
+                if (questionToDelete == null) {
                     return NotFound();
                 }
 
-                _context.Surveys.Remove(sectionToDelete);
+                _context.Questions.Remove(questionToDelete);
 
                 bool changesPersistedToDatabase = await PersistsChangesToDatabase();
                 if (changesPersistedToDatabase == false) {
@@ -159,6 +141,20 @@ namespace Server.Controllers {
         }
         #endregion
 
+        #region Utility Methods
+        [NonAction]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<bool> PersistsChangesToDatabase() {
+            int amountChanges = await _context.SaveChangesAsync();
+            return amountChanges > 0;
+        }
 
+        [NonAction]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<QuestionModel> GetQuestionById(int questionId) {
+            var questionToGet = await _context.Questions.FirstAsync(s => s.Id == questionId);
+            return questionToGet;
+        }
+        #endregion
     }
 }
