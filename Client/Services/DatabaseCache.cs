@@ -19,7 +19,12 @@ namespace Client.Services {
             }
         }
 
-
+        internal async Task<SectionModel> GetCategoryById(int categoryId) {
+            if (_sections == null) {
+                await GetSectionsFromDbCache();
+            }
+            return _sections.First(category => category.Id == categoryId);
+        }
 
         private bool _gettingSectionsFromDbCache = false;
 

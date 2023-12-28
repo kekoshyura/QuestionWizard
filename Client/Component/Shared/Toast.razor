@@ -8,14 +8,14 @@
     </div>
 
     <div class="toast-body">
-        @ToasBody
+        @ToastBody
     </div>
 </div>
 
 @code {
     [Parameter] public bool IsError { get; set; }
     [Parameter] public string ToastTitle { get; set; }
-    [Parameter] public string ToasBody { get; set; }
+    [Parameter] public string ToastBody { get; set; }
     [Parameter] public EventCallback ParentMethodToCallOnClickBtnClose { get; set; }
 
     private string _showClass = string.Empty;

@@ -1,4 +1,5 @@
 ﻿@page "/admin/categories"
+@using System.Net
 
 
 
@@ -13,7 +14,7 @@
                 <hr />
                 <br />
 
-                @if (databaseCache.Sections == null) {
+                @if (databaseCache.Sections == null || _attempingToDeletedCategory == true) {
                     <LoadingDot />
                 }
                 else {
@@ -61,7 +62,7 @@
                                                         <i class="fas fa-edit"></i> Update    
                                                     </a>
                                                     <br />
-                                                    <button class="btn btn-danger shadow md-f-size-1-5">
+                                                    <button @onclick="(() => DeleteCategory(category))" class="btn btn-danger shadow md-f-size-1-5">
                                                         <i class="fas fa-trash"></i> Delete
                                                     </button>
                                                 </div>
@@ -74,8 +75,21 @@
                         </div>
 
                     }
-
                 }
+                <div class="position-fixed bottom-0 end-0 z-index-5">
+                    @if (_successfullyDeletedCategory == true) {
+                        <Toast IsError="false"
+                               ToastTitle="Successfully deleted category"
+                               ToastBody="The category has been removed from the database"
+                               ParentMethodToCallOnClickBtnClose="() => _successfullyDeletedCategory = false" />
+                    }
+                    @if (_unsuccessfullyTriedDeletedCategory == true) {
+                        <Toast IsError="true"
+                               ToastTitle="Delete failed."
+                               ToastBody="@($"The reason is \"{_reasonUnsuccessfullyTriedToDeletedCategory}\". Please try again and if the issue persists contact to the administrator.")"
+                               ParentMethodToCallOnClickBtnClose="() => _unsuccessfullyTriedDeletedCategory = false" />
+                    }
+                </div>
             </div>
         </div>
     </div>
@@ -85,6 +99,12 @@
 @implements IDisposable
 @code {
     [Inject] DatabaseCache databaseCache { get; set; }
+    [Inject] HttpClient httpClient { get; set; }
+
+    private bool _attempingToDeletedCategory = false;
+    private bool _successfullyDeletedCategory = false;
+    private bool _unsuccessfullyTriedDeletedCategory = false;
+    private string _reasonUnsuccessfullyTriedToDeletedCategory = string.Empty;
 
     protected override async Task OnInitializedAsync() {
         databaseCache.OnSectionsDataChanged += StateHasChanged;
@@ -93,6 +113,47 @@
         }
     }
 
-    public void Dispose() => databaseCache.OnSectionsDataChanged -= StateHasChanged;     
+    public void Dispose() => databaseCache.OnSectionsDataChanged -= StateHasChanged;  
+
+    private async void DeleteCategory(SectionModel categoryToDelete) {
+        if(categoryToDelete.Surveys  != null && categoryToDelete.Surveys.Count != 0) {
+            string postTitlesThatMustBeDeletedFirst = string.Empty;
+            for (int i = 0; i < categoryToDelete.Surveys.Count; i++) {
+                if (i == categoryToDelete.Surveys.Count - 1) {
+                    postTitlesThatMustBeDeletedFirst += $"\"{categoryToDelete.Surveys[i].Title}\"";
+                }
+                else if (i == categoryToDelete.Surveys.Count - 2) {
+                    postTitlesThatMustBeDeletedFirst += $"\"{categoryToDelete.Surveys[i].Title}\" and ";
+                }
+                else {
+                    postTitlesThatMustBeDeletedFirst += $"\"{categoryToDelete.Surveys[i].Title}\", ";
+                }
+            }
+
+            _reasonUnsuccessfullyTriedToDeletedCategory = $"The category still has survey in it. Please delete the surveys titled {postTitlesThatMustBeDeletedFirst} first";
+            _unsuccessfullyTriedDeletedCategory = true;
+        }
+        else {
+            _attempingToDeletedCategory = true;
+            HttpResponseMessage response = await httpClient.DeleteAsync($"{ApiEndpoints.s_sections}/{categoryToDelete.Id}");
+
+            if(response.StatusCode == HttpStatusCode.NoContent) {
+                if (databaseCache.Sections.Remove(categoryToDelete)) {
+                    _successfullyDeletedCategory = true;
+                }
+                else {
+                    _reasonUnsuccessfullyTriedToDeletedCategory = "An unexpected error has occured. Please try again and if the issue persists contact to the administrator.";
+                    _unsuccessfullyTriedDeletedCategory = true;
+                }
+            }
+            else {
+                _reasonUnsuccessfullyTriedToDeletedCategory = $"The API didn't return an HttpStatusCode.NoContent status code. Insted the api returned {response.StatusCode} and gave the following reason for failure: {response.ReasonPhrase}.";
+                _unsuccessfullyTriedDeletedCategory = true;
+            }
+        }
+
+        _attempingToDeletedCategory = false;
+        StateHasChanged();
+    }
 
 }
