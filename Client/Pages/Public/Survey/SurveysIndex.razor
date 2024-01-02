@@ -1,0 +1,103 @@
+﻿@page "/survey/{categoryId:int}"
+@using Client.Component.Public.Survey
+@using Client.Component.Public.Shared
+
+<Navbar />
+
+<main class="container min-vh-90 py-5">
+    <div class="row">
+                
+        @if(_surveys == null) {
+            <LoadingDot />
+        }
+        else{
+            if(_surveys.Count < 1) {
+                <h1>Surveys not found</h1>
+            }
+        else if (_surveys.Count < 3) {
+                <div class="row">
+                    @foreach(var survey in _surveys) {
+                        <div class="col-md-4">
+                            <SurveyCard Survey="survey"></SurveyCard>
+                        </div>
+                    }
+                </div>
+            }
+            else {
+                @if (_surveys.Count % 3 == 0) {
+                    @for (int i = 0; i < _surveys.Count; i += 3) {
+                        <div class="row">
+                            <div class="col-md-4">
+                                <SurveyCard Survey="_surveys[i]" />
+                            </div>
+                            <div class="col-md-4">
+                                <SurveyCard Survey="_surveys[i+1]" />
+                            </div>
+                            <div class="col-md-4">
+                                <SurveyCard Survey="_surveys[i+2]" />
+                            </div>
+                        </div>
+                    }
+                }
+                else if (_surveys.Count % 3 == 2) {
+                    @for (int i = 0; i < _surveys.Count - 2; i += 3) {
+                        <div class="row">
+                            <div class="col-md-4">
+                                <SurveyCard Survey="_surveys[i]" />
+                            </div>
+                            <div class="col-md-4">
+                                <SurveyCard Survey="_surveys[i+1]" />
+                            </div>
+                            <div class="col-md-4">
+                                <SurveyCard Survey="_surveys[i+2]" />
+                            </div>
+                        </div>
+                    }
+                    <div class="row">
+                        <div class="col-md-4">
+                            <SurveyCard Survey="_surveys[_surveys.Count - 2]" />
+                        </div>
+                        <div class="col-md-4">
+                            <SurveyCard Survey="_surveys[_surveys.Count - 1]" />
+                        </div>
+                    </div>
+                }
+                else if (_surveys.Count % 3 == 1) {
+                    @for (int i = 0; i < _surveys.Count - 1; i += 3) {
+                        <div class="row">
+                            <div class="col-md-4">
+                                <SurveyCard Survey="_surveys[i]" />
+                            </div>
+                            <div class="col-md-4">
+                                <SurveyCard Survey="_surveys[i+1]" />
+                            </div>
+                            <div class="col-md-4">
+                                <SurveyCard Survey="_surveys[i+2]" />
+                            </div>
+                        </div>
+                    }
+                    <div class="row">
+                        <div class="col-md-4">
+                            <SurveyCard Survey="_surveys[_surveys.Count - 1]" />
+                        </div>
+                    </div>
+                }
+            }
+        }
+
+                
+    </div>
+</main>
+
+@code {
+    [Parameter] public int categoryId { get; set; }
+    [Inject] DatabaseCache databaseCache { get; set; }
+    private List<SurveyModel> _surveys = null;
+
+    protected override async Task OnInitializedAsync() {
+        _surveys = await databaseCache.GetSurveysByCategoryId(categoryId);
+        if(_surveys.Count == 0) {
+            throw new ArgumentNullException();
+        }
+    }
+}

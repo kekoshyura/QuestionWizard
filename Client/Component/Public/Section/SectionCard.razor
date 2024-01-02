@@ -7,7 +7,9 @@
         <p class="card-text">@Section.Description</p>
     </div>
 
-    <a href="/surveys" class="btn btn-primary stretched-link">View Surveys</a>
+    <a href="@($"/survey/{Section.Id}")" class="btn btn-primary stretched-link md-f-size-1-5">
+        <i class="fas fa-mail-bulk"></i>View Surveys
+    </a>
 </div>
 
 

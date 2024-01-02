@@ -1,9 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Core.Models.CustomValidation;
+using System.ComponentModel.DataAnnotations;
 using static Core.Common.Common;
 
 namespace Core.Models {
     public class QuestionModel {
         public int Id { get; set; }
+
+        [NoThreeMoreSpacesInARow(ErrorMessage = "The category description contains three or more spaces. Please, remove them")]
         public string Text { get; set; }
         public ControlType ControlType { get; set; }
         [Required]

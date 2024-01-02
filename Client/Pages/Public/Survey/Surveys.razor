@@ -1,0 +1,116 @@
+﻿@page "/surveys"
+@using Client.Component.Public.Shared
+@using Client.Component.Public.Survey
+
+<Navbar />
+
+<main class="container min-vh-90 py-5">
+    <div class="row">
+        <div class="col">
+            <h1 class="my-3">Surveys</h1>
+            <p>Click a survey card to view its questions</p>
+
+            <div class="row">
+                
+                @if(databaseCache.Surveys == null) {
+                    <LoadingDot />
+                }
+                else{
+                    if(databaseCache.Surveys.Count < 1) {
+                        <h1>Surveys not found</h1>
+                    }
+                    else if(databaseCache.Surveys.Count < 3){
+                        <div class="row">
+                            @foreach(var survey in databaseCache.Surveys) {
+                                <div class="col-md-4">
+                                    <SurveyCard Survey="survey"></SurveyCard>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else {
+                        @if(databaseCache.Surveys.Count % 3 == 0) {
+                            @for(int i = 0; i < databaseCache.Surveys.Count; i += 3) {
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <SurveyCard Survey="databaseCache.Surveys[i]" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <SurveyCard Survey="databaseCache.Surveys[i+1]" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <SurveyCard Survey="databaseCache.Surveys[i+2]" />
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else if (databaseCache.Surveys.Count % 3 == 2) {
+                            @for (int i = 0; i < databaseCache.Surveys.Count - 2; i += 3) {
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <SurveyCard Survey="databaseCache.Surveys[i]" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <SurveyCard Survey="databaseCache.Surveys[i+1]" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <SurveyCard Survey="databaseCache.Surveys[i+2]" />
+                                    </div>
+                                </div>
+                            }
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <SurveyCard Survey="databaseCache.Surveys[databaseCache.Surveys.Count - 2]" />
+                                </div>
+                                <div class="col-md-4">
+                                    <SurveyCard Survey="databaseCache.Surveys[databaseCache.Surveys.Count - 1]" />
+                                </div>
+                            </div>
+                        }
+                        else if (databaseCache.Surveys.Count % 3 == 1) {
+                            @for (int i = 0; i < databaseCache.Surveys.Count - 1; i += 3) {
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <SurveyCard Survey="databaseCache.Surveys[i]" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <SurveyCard Survey="databaseCache.Surveys[i+1]" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <SurveyCard Survey="databaseCache.Surveys[i+2]" />
+                                    </div>
+                                </div>
+                            }
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <SurveyCard Survey="databaseCache.Surveys[databaseCache.Surveys.Count - 1]" />
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+
+                
+            </div>
+        </div>
+    </div>
+</main>
+<Footer />
+
+
+@implements IDisposable
+@code {
+    [Inject] DatabaseCache databaseCache { get; set; }
+
+    protected override async Task OnInitializedAsync() {
+        databaseCache.OnSurveysDataChanged += StateHasChanged;
+
+        if (databaseCache.Surveys == null) {
+            await databaseCache.GetSurveysFromDbCache();
+        }
+    }
+
+    public void Dispose() {
+        databaseCache.OnSurveysDataChanged -= StateHasChanged;
+    }
+}

@@ -45,6 +45,14 @@ namespace Server.Controllers {
             return Ok(sections);
         }
 
+
+        [HttpGet("dto/{id}")]
+        public async Task<IActionResult> GetDTO(int id) {
+            SurveyModel survey = await GetSurveyById(id);
+            SurveyDTO surveyDTO = _mapper.Map<SurveyDTO>(survey);
+            return Ok(surveyDTO);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id) {
             SurveyModel section = await GetSurveyById(id);
@@ -110,7 +118,7 @@ namespace Server.Controllers {
                     return StatusCode(500, $"Something went wrong on our side. Please contact to administrator.");
                 }
                 else {
-                    return Created("Create", surveyToUpdate);
+                    return NoContent();
                 }
             }
             catch (Exception e) {

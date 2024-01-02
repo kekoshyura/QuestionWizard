@@ -1,4 +1,5 @@
-﻿using Core.Models;
+﻿using AutoMapper;
+using Core.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
@@ -9,10 +10,12 @@ namespace Server.Controllers {
     public class SectionsController : ControllerBase {
         private readonly DataContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IMapper _mapper;
 
-        public SectionsController(DataContext context, IWebHostEnvironment webHostEnvironment) {
+        public SectionsController(DataContext context, IWebHostEnvironment webHostEnvironment, IMapper mapper) {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _mapper = mapper;
         }
 
         #region CRUD operations
@@ -31,16 +34,18 @@ namespace Server.Controllers {
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] SectionModel sectionToCreate) {
+        public async Task<IActionResult> Create([FromBody] SectionDTO sectionToCreateDTO) {
             try {
 
-                if (sectionToCreate == null) {
+                if (sectionToCreateDTO == null) {
                     return BadRequest(ModelState);
                 }
 
                 if (!ModelState.IsValid) {
                     return BadRequest(ModelState);
                 }
+
+                SectionModel sectionToCreate = _mapper.Map<SectionModel>(sectionToCreateDTO);
 
                 await _context.Sections.AddAsync(sectionToCreate);
 
@@ -61,20 +66,23 @@ namespace Server.Controllers {
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] SectionModel sectionToUpdate) {
+        public async Task<IActionResult> Update(int id, [FromBody] SectionDTO sectionToCreateDTO) {
             try {
-                if (id < 1 || sectionToUpdate == null || id != sectionToUpdate.Id) {
+                if (id < 1 || sectionToCreateDTO == null || id != sectionToCreateDTO.Id) {
                     return BadRequest(ModelState);
                 }
 
-                bool exists = await _context.Sections.AnyAsync(x => x.Id == id);
-                if (exists == false) {
+                var oldSection = await _context.Sections.FindAsync(id);
+                if (oldSection == null) {
                     return NotFound();
                 }
 
                 if (!ModelState.IsValid) {
                     return BadRequest(ModelState);
                 }
+
+                SectionModel sectionToUpdate = _mapper.Map<SectionModel>(sectionToCreateDTO);
+                _context.Entry(oldSection).State = EntityState.Detached;
 
                 _context.Sections.Update(sectionToUpdate);
 

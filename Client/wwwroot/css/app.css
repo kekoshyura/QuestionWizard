@@ -78,6 +78,10 @@ body{
     min-height: 90vh !important;
 }
 
+.overflow-auto{
+    overflow: auto;
+}
+
 /* 2. Backgrounds */
 .bg-lightgray {
     background-color: #EBEBEB;
@@ -132,6 +136,9 @@ body {
     max-width: 50%;
 }
 
+.list-group{
+    border-radius: 0px;
+}
 
 
 /* 5. Custom responsive styles */

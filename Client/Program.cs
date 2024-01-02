@@ -9,6 +9,5 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddSingleton<HttpClient>();
 builder.Services.AddSingleton<DatabaseCache>();
-builder.Services.AddSingleton<SurveysDatabaseCache>();
 
 await builder.Build().RunAsync();

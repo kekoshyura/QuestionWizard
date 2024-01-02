@@ -1,0 +1,146 @@
+﻿@page "/admin/surveys"
+@using System.Net
+
+
+
+
+<main class="admin-area-main">
+    <SideBar />
+    <div class="admin-area-content container-fluid bg-lightgray white">
+        <div class="row g-0">
+            <div class="col">
+                <h1>Surveys</h1>
+                <br />
+                <hr />
+                <br />
+
+                @if (databaseCache.Surveys == null || _attempingToDeletedSurvey == true) {
+                    <LoadingDot />
+                }
+                else {
+                    <a href="/admin/surveys/create" class="btn btn-success shadow me-5 md-f-size-1-5">
+                        <i class="fas fa-plus"></i>Create Survey     
+                    </a>
+
+                    <button @onclick="() => databaseCache.GetSurveysFromDbCache()" class="btn btn-primary md-f-size-1-5 shadow">
+                        <i class="fas fa-sync"></i> Refresh data    
+                    </button>
+
+                    <br />
+                    <br />
+                    <br />
+
+                    @if(databaseCache.Surveys.Count < 1) {
+                        <h1>No surveys found. Please, create one.</h1>
+                    }
+                    else {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Section Name</th>
+                                        <th scope="col">Title</th>
+                                        <th scope="col">Description</th>
+                                        <th scope="col">Questions</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach(var survey in databaseCache.Surveys) {
+                                        <tr>
+                                            <th class="w-8" scope="row">
+                                                <p>@survey.Section.Title</p>
+                                            </th>
+                                            <th class="w-8" scope="row">
+                                                <p>@survey.Title</p>
+                                            </th>
+                                            <td class="w-15">
+                                                <p>@survey.Description</p>
+                                            </td>
+                                            <td class="w-15">
+                                                @foreach (var question in survey.Questions) {
+                                                    <p>@question.Text</p>
+                                                }
+                                            </td>
+                                            <td class="w-35">
+                                                <div class="d-flex flex-column">
+                                                    <a href="/admin/surveys/update/@survey.Id" class="btn btn-update shadow md-f-size-1-5">
+                                                        <i class="fas fa-edit"></i> Update    
+                                                    </a>
+                                                    <br />
+                                                    <button @onclick="(() => DeleteSurvey(survey))" class="btn btn-danger shadow md-f-size-1-5">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                    }
+                }
+                <div class="position-fixed bottom-0 end-0 z-index-5">
+                    @if (_successfullyDeletedSurvey == true) {
+                        <Toast IsError="false"
+                               ToastTitle="Successfully deleted survey"
+                               ToastBody="The survey has been removed from the database"
+                               ParentMethodToCallOnClickBtnClose="() => _successfullyDeletedSurvey = false" />
+                    }
+                    @if (_unsuccessfullyTriedDeletedSurvey == true) {
+                        <Toast IsError="true"
+                               ToastTitle="Delete failed."
+                               ToastBody="@($"The reason is \"{_reasonUnsuccessfullyTriedToDeletedSurvey}\". Please try again and if the issue persists contact to the administrator.")"
+                               ParentMethodToCallOnClickBtnClose="() => _unsuccessfullyTriedDeletedSurvey = false" />
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+
+@implements IDisposable
+@code {
+    [Inject] DatabaseCache databaseCache { get; set; }
+    [Inject] HttpClient httpClient { get; set; }
+
+    private bool _attempingToDeletedSurvey = false;
+    private bool _successfullyDeletedSurvey = false;
+    private bool _unsuccessfullyTriedDeletedSurvey = false;
+    private string _reasonUnsuccessfullyTriedToDeletedSurvey = string.Empty;
+
+    protected override async Task OnInitializedAsync() {
+        databaseCache.OnSurveysDataChanged += StateHasChanged;
+        if(databaseCache.Surveys == null) {
+            await databaseCache.GetSurveysFromDbCache();
+        }
+    }
+
+    public void Dispose() => databaseCache.OnSurveysDataChanged -= StateHasChanged;  
+
+    private async void DeleteSurvey(SurveyModel surveyToDelete) {
+        _attempingToDeletedSurvey = true;
+        HttpResponseMessage response = await httpClient.DeleteAsync($"{ApiEndpoints.s_surveys}/{surveyToDelete.Id}");
+
+        if (response.StatusCode == HttpStatusCode.NoContent) {
+            if (databaseCache.Surveys.Remove(surveyToDelete)) {
+                _successfullyDeletedSurvey = true;
+            }
+            else {
+                _reasonUnsuccessfullyTriedToDeletedSurvey = "An unexpected error has occured. Please try again and if the issue persists contact to the administrator.";
+                _unsuccessfullyTriedDeletedSurvey = true;
+            }
+        }
+        else {
+            _reasonUnsuccessfullyTriedToDeletedSurvey = $"The API didn't return an HttpStatusCode.NoContent status code. Insted the api returned {response.StatusCode} and gave the following reason for failure: {response.ReasonPhrase}.";
+            _unsuccessfullyTriedDeletedSurvey = true;
+        }
+
+        _attempingToDeletedSurvey = false;
+        StateHasChanged();
+    }
+
+}

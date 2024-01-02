@@ -13,7 +13,10 @@
                 <a href="@HomePageUri" class="nav-link mx-5 md-and-smaller-my-3 @(IsPageActive(HomePageUri) ? "active" : string.Empty)">Home</a>
             </li>
             <li class="nav-item">
-                <a href="@SectionPageUri" class="nav-link mx-5 md-and-smaller-my-3 @(IsPageActive(SectionPageUri) ? "active" : string.Empty)">Section</a>
+                <a href="@SectionPageUri" class="nav-link mx-5 md-and-smaller-my-3 @(IsPageActive(SectionPageUri) ? "active" : string.Empty)">Sections</a>
+            </li>
+            <li class="nav-item">
+                <a href="@SurveyPageUri" class="nav-link mx-5 md-and-smaller-my-3 @(IsPageActive(SurveyPageUri) ? "active" : string.Empty)">Surveys</a>
             </li>
         </ul>
     </div>
@@ -24,6 +27,7 @@
     [Inject] public NavigationManager NavigationManager { get; set; }
     private const string HomePageUri = "/";
     private const string SectionPageUri = "/sections";
+    private const string SurveyPageUri = "/surveys";
 
     private bool IsPageActive(string pageToCheckUri) {
         string[] currentUriSplit = NavigationManager.Uri.Split('/').Skip(3).ToArray();
