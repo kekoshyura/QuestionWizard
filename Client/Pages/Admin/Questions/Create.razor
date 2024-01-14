@@ -1,0 +1,92 @@
+﻿@page "/admin/questions/create/{surveyId:int}"
+@using System.Net
+@using Client.Component.Admin
+@using Core.Common
+
+
+
+        <main class="admin-area-main">
+            <SideBar />
+
+            <div class="admin-area-content container-fluid bg-white">
+                <div class="row g-0">
+                    <div class="col">
+                        <h1 class="mb-4">@(_createSuccessful ? "Success! Go back to all categoties." : "Create Question")</h1>
+                        @if (_attempingToCreate == true) {
+                            <h1>Creating question...</h1>
+                            <LoadingDot />
+                        }
+                        else if (_createSuccessful == false && _attempingToCreate == false) {
+                            <EditForm Model="_questionToCreate" OnValidSubmit="CreateQuestion">
+                                <DataAnnotationsValidator />
+
+                                <div class="form-group mb-5">
+                                    <label for="questionName">Question Name</label>
+                                    <InputText @bind-Value="_questionToCreate.Text" class="form-control" id="questionName"></InputText>
+                                </div>
+                                <div class="form-group mb-5">
+                                    <label for="controlType">Select control type</label>
+                                    <InputSelect @bind-Value="@_questionToCreate.ControlType">
+                                        @foreach (var cntrType in Enum.GetValues(typeof(ControlType))) {
+                                            <option value="@cntrType">@cntrType</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                               
+                                <ValidationSummary />
+
+                                <button class="btn btn-success shadow d-block mt-5 md-f-size-1-5" type="submit">
+                                    <i class="far fa-save"></i> Save
+                                </button>
+                            </EditForm>
+                        }
+
+
+                        <a href="/admin/questions" class="btn btn-primary shadow mt-5 md-f-size-1-5">
+                            <i class="fas fa-arrow-left"></i> Back to all questions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+
+
+
+
+@code{
+    [Inject] HttpClient httpClient { get; set; }
+    [Inject] DatabaseCache databaseCache { get; set; }
+    [Parameter] public int surveyId { get; set; }
+
+    private QuestionModel _questionToCreate = new();
+    private ControlType controlType;
+    private bool _attempingToCreate = false;
+    private bool _attempingToCreateFailed = false;
+    private bool _createSuccessful = false;
+
+    protected override async Task OnInitializedAsync() {
+        _questionToCreate = new QuestionModel {
+            SurveyId = surveyId,
+            QuestionOptions = new List<QuestionOptionModel>()
+        };
+    }
+
+    private async Task CreateQuestion() {
+        _attempingToCreate = true;
+
+        HttpResponseMessage response = await httpClient.PostAsJsonAsync<QuestionModel>(ApiEndpoints.s_questions, _questionToCreate);
+
+        if(response.StatusCode == HttpStatusCode.Created) {
+            QuestionModel addedQuestion = await response.Content.ReadFromJsonAsync<QuestionModel>();
+            databaseCache.Questions.Add(addedQuestion);
+            _createSuccessful = true;
+        }
+        else {
+            _attempingToCreateFailed = true;
+        }
+        _attempingToCreate = false;
+    }
+
+   
+}

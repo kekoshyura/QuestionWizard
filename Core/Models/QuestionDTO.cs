@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using static Core.Common.Common;
+﻿using Core.Common;
+using System.ComponentModel.DataAnnotations;
 
 namespace Core.Models {
     public class QuestionDTO {

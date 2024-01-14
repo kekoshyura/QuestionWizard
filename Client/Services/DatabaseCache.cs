@@ -120,5 +120,126 @@ namespace Client.Services {
 
         private void NotifySurveysDataChanges() => OnSurveysDataChanged?.Invoke();
         #endregion
+
+
+        #region Questions
+        private List<QuestionModel> _questions = null;
+        internal List<QuestionModel> Questions {
+            get { return _questions; }
+            set {
+                _questions = value;
+                NotifyQuestionsDataChanges();
+            }
+        }
+
+
+        internal async Task<List<QuestionModel>> GetQuestionBySurveyId(int surveyId) {
+            if (_questions == null) {
+                await GetQuestionsFromDbCache();
+            }
+
+            var questionBySurveyId = _questions.FindAll(x => x.SurveyId == surveyId);
+            if (questionBySurveyId == null) {
+                throw new ArgumentNullException(nameof(questionBySurveyId));
+            }
+
+            return questionBySurveyId;
+        }
+
+
+        private bool _gettingQuestionsFromDbCache = false;
+
+
+        internal async Task<QuestionModel> GetQuestionById(int questionId) {
+            if (_questions == null) {
+                await GetSurveysFromDbCache();
+            }
+
+            var question = _questions.First(q => q.Id == questionId);
+            if (question == null) {
+                throw new ArgumentNullException(nameof(question));
+            }
+
+            return question;
+        }
+
+        internal async Task<QuestionDTO> GetQuestionDTOById(int questionId) => await _httpClient.GetFromJsonAsync<QuestionDTO>($"{ApiEndpoints.s_questionsDTO}/{questionId}");
+
+
+
+
+        internal async Task GetQuestionsFromDbCache() {
+            if (_gettingQuestionsFromDbCache == false) {
+                _gettingQuestionsFromDbCache = true;
+                _questions = await _httpClient.GetFromJsonAsync<List<QuestionModel>>(ApiEndpoints.s_questions);
+                _gettingQuestionsFromDbCache = false;
+            }
+
+        }
+
+        internal event Action OnQuestionsDataChanged;
+
+        private void NotifyQuestionsDataChanges() => OnQuestionOptionsDataChanged?.Invoke();
+        #endregion
+
+        #region QuestionOptions
+        private List<QuestionOptionModel> _questionOptions = null;
+        internal List<QuestionOptionModel> QuestionOptions {
+            get { return _questionOptions; }
+            set {
+                _questionOptions = value;
+                NotifyQuestionOptionsDataChanges();
+            }
+        }
+
+
+        internal async Task<List<QuestionOptionModel>> GetQuestionOptionsByQuestionId(int questionId) {
+            if (_questionOptions == null) {
+                await GetQuestionOptionsFromDbCache();
+            }
+
+            var questionOptionsByQuestionId = _questionOptions.FindAll(x => x.QuestionId == questionId);
+            if (questionOptionsByQuestionId == null) {
+                throw new ArgumentNullException(nameof(questionOptionsByQuestionId));
+            }
+
+            return questionOptionsByQuestionId;
+        }
+
+
+        private bool _gettingQuestionOptionsFromDbCache = false;
+
+
+        internal async Task<QuestionOptionModel> GetQuestionOptionById(int questionOptionId) {
+            if (_questions == null) {
+                await GetSurveysFromDbCache();
+            }
+
+            var questionOptions = _questionOptions.First(q => q.Id == questionOptionId);
+            if (questionOptions == null) {
+                throw new ArgumentNullException(nameof(questionOptions));
+            }
+
+            return questionOptions;
+        }
+
+        internal async Task<QuestionOptionDTO> GetQuestionOptionsDTOById(int questionOptionId) => await _httpClient.GetFromJsonAsync<QuestionOptionDTO>($"{ApiEndpoints.s_questionOptionsDTO}/{questionOptionId}");
+
+
+
+
+        internal async Task GetQuestionOptionsFromDbCache() {
+            if (_gettingQuestionOptionsFromDbCache == false) {
+                _gettingQuestionOptionsFromDbCache = true;
+                _questionOptions = await _httpClient.GetFromJsonAsync<List<QuestionOptionModel>>(ApiEndpoints.s_questionOptions);
+                _gettingQuestionOptionsFromDbCache = false;
+            }
+
+        }
+
+        internal event Action OnQuestionOptionsDataChanged;
+
+        private void NotifyQuestionOptionsDataChanges() => OnQuestionOptionsDataChanged?.Invoke();
+        #endregion
     }
 }

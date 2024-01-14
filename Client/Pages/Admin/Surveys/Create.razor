@@ -57,14 +57,10 @@
 
 @code{
     [Inject] HttpClient httpClient { get; set; }
-    [Inject] JSRuntime jSRuntime { get; set; }
-    private ElementReference _quillJsEditorDiv;
-    protected async override Task OnAfterRenderAsync(bool firstRender) {
-        if (firstRender) {
+    protected async override Task OnInitializedAsync() {
             if (databaseCache.Sections == null) {
                 await databaseCache.GetSectionsFromDbCache();
                 StateHasChanged();
-            }
         }
 
     }

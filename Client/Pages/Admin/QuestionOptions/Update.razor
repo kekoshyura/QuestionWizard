@@ -1,0 +1,84 @@
+﻿@page "/admin/questionOptions/update/{questionOptionId:int}"
+@using System.Net;
+@using Core.Common;
+
+<main class="admin-area-main">
+    <SideBar />
+
+    <div class="admin-area-content container-fluid bg-white">
+        <div class="row g-0">
+            <div class="col">
+                <h1 class="mb-4">Update category</h1>
+                @if(_questionOptionToUpdate == null || _attempingToUpdate == true) {
+                    <LoadingDot />
+                } else{
+                    <EditForm Model="_questionOptionToUpdate" OnValidSubmit="UpdateQuestionOption">
+                        <DataAnnotationsValidator />
+
+                        <div class="form-group mb-5">
+                            <label for="categoryName">Question Option Text</label>
+                            <InputText @bind-Value="_questionOptionToUpdate.Text" class="form-control" id="categoryName"></InputText>
+                        </div>
+                        
+                        <ValidationSummary />
+
+                        <button class="btn btn-success shadow d-block mt-5 md-f-size-1-5" type="submit">
+                            <i class="far fa-save"></i> Save
+                        </button>
+
+                        <a href="/admin/questionOptions/@_questionOptionToUpdate.QuestionId" class="btn btn-primary shadow mt-5 md-f-size-1-5">
+                            <i class="fas fa-arrow-left"></i> Back to all categories
+                        </a>
+                    </EditForm>
+                }
+
+                <div class="position-fixed bottom-0 end-5 z-index-5">
+                    @if (_updateSuccessful == true) {
+                        <Toast IsError="false"
+                               ToastTitle="Update successful"
+                               ToastBody="Your changes have been saved to the database."
+                               ParentMethodToCallOnClickBtnClose="() => _updateSuccessful = false" />
+                    }
+                    @if (_attempingToUpdateFailed == true) {
+                        <Toast IsError="true"
+                               ToastTitle="Update failed"
+                               ToastBody="Update failed. Please try again and if the issue persists contant to the administrator."
+                               ParentMethodToCallOnClickBtnClose="() => _attempingToUpdateFailed = false" />
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+@code{
+    [Parameter] public int questionOptionId { get; set; }
+    [Inject] HttpClient httpClient { get; set; }
+    [Inject] DatabaseCache databaseCache { get; set; }
+
+    private QuestionOptionModel _questionOptionToUpdate = null;
+    private bool _attempingToUpdate = false;
+    private bool _attempingToUpdateFailed = false;
+    private bool _updateSuccessful = false;
+
+    protected async override Task OnParametersSetAsync()
+    {
+        _questionOptionToUpdate = await databaseCache.GetQuestionOptionById(questionOptionId);
+    }
+
+    private async Task UpdateQuestionOption() {
+        _attempingToUpdate = true;
+
+        HttpResponseMessage response = await httpClient.PutAsJsonAsync<QuestionOptionModel>($"{ApiEndpoints.s_questionOptions}/{questionOptionId}", _questionOptionToUpdate);
+
+        if(response.StatusCode == HttpStatusCode.Created) {
+            QuestionOptionModel unupdatedQuestionOptionsInList = databaseCache.QuestionOptions.Single(q => q.Id == questionOptionId);
+            UtilityFunctions.CopyObjectProperties(_questionOptionToUpdate, unupdatedQuestionOptionsInList);
+            _updateSuccessful = true;
+        }
+        else {
+            _attempingToUpdateFailed = true;
+        }
+        _attempingToUpdate = false;
+    }
+}

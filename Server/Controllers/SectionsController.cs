@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
@@ -7,6 +8,7 @@ using Server.Data;
 namespace Server.Controllers {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Administrator")]
     public class SectionsController : ControllerBase {
         private readonly DataContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
@@ -21,6 +23,7 @@ namespace Server.Controllers {
         #region CRUD operations
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Get() {
 
             List<SectionModel> sections = await _context.Sections.Include(x => x.Surveys).ToListAsync();
@@ -28,6 +31,7 @@ namespace Server.Controllers {
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> Get(int id) {
             SectionModel section = await GetSectionById(id);
             return Ok(section);

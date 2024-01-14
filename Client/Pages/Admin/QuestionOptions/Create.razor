@@ -1,0 +1,82 @@
+﻿@page "/admin/questionoptions/create/{questionId:int}"
+@using System.Net
+@using Client.Component.Admin
+@using Core.Common
+
+
+
+        <main class="admin-area-main">
+            <SideBar />
+
+            <div class="admin-area-content container-fluid bg-white">
+                <div class="row g-0">
+                    <div class="col">
+                        <h1 class="mb-4">@(_createSuccessful ? "Success! Go back to all question options." : "Create Question Option")</h1>
+                        @if (_attempingToCreate == true) {
+                            <h1>Creating question option...</h1>
+                            <LoadingDot />
+                        }
+                        else if (_createSuccessful == false && _attempingToCreate == false) {
+                        <EditForm Model="_questionOptionToCreate" OnValidSubmit="CreateQuestionOption">
+                                <DataAnnotationsValidator />
+
+                                <div class="form-group mb-5">
+                                    <label for="questionName">Question Name</label>
+                                <InputText @bind-Value="_questionOptionToCreate.Text" class="form-control" id="questionName"></InputText>
+                                </div>
+                               
+                                <ValidationSummary />
+
+                                <button class="btn btn-success shadow d-block mt-5 md-f-size-1-5" type="submit">
+                                    <i class="far fa-save"></i> Save
+                                </button>
+                            </EditForm>
+                        }
+
+
+                        <a href="/admin/questionoptions/@questionId" class="btn btn-primary shadow mt-5 md-f-size-1-5">
+                            <i class="fas fa-arrow-left"></i> Back to all questions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+
+
+
+
+@code{
+    [Inject] HttpClient httpClient { get; set; }
+    [Inject] DatabaseCache databaseCache { get; set; }
+    [Parameter] public int questionId { get; set; }
+
+    private QuestionOptionModel _questionOptionToCreate = new();
+    private bool _attempingToCreate = false;
+    private bool _attempingToCreateFailed = false;
+    private bool _createSuccessful = false;
+
+    protected override async Task OnInitializedAsync() {
+        _questionOptionToCreate = new QuestionOptionModel {
+             QuestionId = questionId
+        }; 
+    }
+
+    private async Task CreateQuestionOption() {
+        _attempingToCreate = true;
+
+        HttpResponseMessage response = await httpClient.PostAsJsonAsync<QuestionOptionModel>(ApiEndpoints.s_questionOptions, _questionOptionToCreate);
+
+        if(response.StatusCode == HttpStatusCode.Created) {
+            QuestionOptionModel addedQuestionOption = await response.Content.ReadFromJsonAsync<QuestionOptionModel>();
+            databaseCache.QuestionOptions.Add(addedQuestionOption);
+            _createSuccessful = true;
+        }
+        else {
+            _attempingToCreateFailed = true;
+        }
+        _attempingToCreate = false;
+    }
+
+   
+}

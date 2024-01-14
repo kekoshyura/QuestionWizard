@@ -6,7 +6,7 @@
     </div>
 
     
-    <button onclick="NavigateToSurveys()" class="btn btn-primary stretched-link">View section</button>
+    <button onclick="@NavigateToSurveys" class="btn btn-primary stretched-link">View section</button>
 </div>
 
 @inject NavigationManager navigationManager
@@ -14,5 +14,8 @@
 @code {
     [Parameter] public SurveyModel Survey { get; set; }
 
-    
+    private void NavigateToSurveys() {
+        string questionURL = $"/questions/{Survey.Id}";
+        navigationManager.NavigateTo(questionURL);
+    }
 }

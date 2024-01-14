@@ -1,0 +1,64 @@
+﻿@page "/questions/{surveyId:int}"
+@using Client.Component.Public.Shared
+
+
+<Navbar />
+
+<div>
+    @if (_questions == null || _questions.Count == 0) {
+        <LoadingDot />
+    }
+    else {
+        <h2>@CurrentQuestion.Text</h2>
+        <ul>
+            @foreach (var answer in CurrentQuestionOptions) {
+                <li>@answer.Text</li>
+            }
+        </ul>
+
+        <div>
+            <button @onclick="NextQuestion" class="btn btn-primary" disabled="@(currentQuestionIndex == _questions.Count - 1)">Next</button>
+            <button @onclick="PreviousQuestion" class="btn btn-secondary" disabled="@(currentQuestionIndex == 0)">Previous</button>
+        </div>
+    }
+    
+</div>
+
+@code {
+    [Parameter] public int surveyId { get; set; }
+    [Inject] DatabaseCache databaseCache { get; set; }
+    private List<QuestionModel> _questions = new List<QuestionModel>();
+    private int currentQuestionIndex = 0;
+    private List<QuestionOptionModel> _questionOptions = new List<QuestionOptionModel>();
+
+    protected override async Task OnInitializedAsync() {
+        if (databaseCache.Questions == null) {
+            await databaseCache.GetQuestionsFromDbCache();
+        }
+        _questions = await databaseCache.GetQuestionBySurveyId(surveyId);
+        if (_questions.Count > 0) {
+            _questionOptions = await databaseCache.GetQuestionOptionsByQuestionId(CurrentQuestion.Id);
+        }
+    }
+
+    private QuestionModel CurrentQuestion => _questions[currentQuestionIndex];
+    private List<QuestionOptionModel> CurrentQuestionOptions => _questionOptions;
+
+    private async Task UpdateQuestionOptions() {
+        _questionOptions = await databaseCache.GetQuestionOptionsByQuestionId(CurrentQuestion.Id);
+    }
+
+    private void NextQuestion() {
+        if (currentQuestionIndex < _questions.Count - 1) {
+            currentQuestionIndex++;
+            UpdateQuestionOptions();
+        }
+    }
+
+    private void PreviousQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            UpdateQuestionOptions();
+        }
+    }
+}

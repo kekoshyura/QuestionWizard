@@ -1,6 +1,6 @@
-﻿using Core.Models.CustomValidation;
+﻿using Core.Common;
+using Core.Models.CustomValidation;
 using System.ComponentModel.DataAnnotations;
-using static Core.Common.Common;
 
 namespace Core.Models {
     public class QuestionModel {
