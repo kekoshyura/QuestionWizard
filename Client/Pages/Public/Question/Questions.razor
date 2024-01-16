@@ -1,28 +1,42 @@
 ﻿@page "/questions/{surveyId:int}"
 @using Client.Component.Public.Shared
+@using System.Collections.Immutable;
 
 
 <Navbar />
 
-<div>
-    @if (_questions == null || _questions.Count == 0) {
-        <LoadingDot />
-    }
-    else {
-        <h2>@CurrentQuestion.Text</h2>
-        <ul>
-            @foreach (var answer in CurrentQuestionOptions) {
-                <li>@answer.Text</li>
-            }
-        </ul>
 
-        <div>
-            <button @onclick="NextQuestion" class="btn btn-primary" disabled="@(currentQuestionIndex == _questions.Count - 1)">Next</button>
-            <button @onclick="PreviousQuestion" class="btn btn-secondary" disabled="@(currentQuestionIndex == 0)">Previous</button>
-        </div>
-    }
-    
-</div>
+<main class="container min-vh-90 py-5 d-flex justify-content-center align-items-center">
+    <div>
+        @if(_survey == null) {
+            <LoadingDot />
+        }
+        else {
+            <h1>The survey @_survey.Title</h1>
+            <br/>
+        }
+        @if (_questions == null || _questions.Count == 0) {
+            <LoadingDot />
+        }
+        else {
+            <h2 class="mb-4">@CurrentQuestion.Text</h2>
+            <form>
+                @foreach (var answer in CurrentQuestionOptions) {
+                    <div class="mb-2">
+                        <input type="radio" id="@answer.Id" name="selectedAnswer" @onchange="(() => SelectAnswer(answer))" />
+                        <label for="@answer.Id" class="ml-2">@answer.Text</label>
+                    </div>
+                }
+            </form>
+
+            <div class="d-flex justify-content-between">
+                <button @onclick="PreviousQuestion" class="btn btn-outline-dark" disabled="@(currentQuestionIndex == 0)">Previous</button>
+                <button @onclick="AddAnswer" class="btn btn-outline-success"> @(isLast ? "Finish" : "Reply")</button>
+                <button @onclick="NextQuestion" class="btn btn-outline-dark" disabled="@(currentQuestionIndex == _questions.Count - 1)">Next</button>
+            </div>
+        }
+    </div>
+</main>
 
 @code {
     [Parameter] public int surveyId { get; set; }
@@ -30,6 +44,11 @@
     private List<QuestionModel> _questions = new List<QuestionModel>();
     private int currentQuestionIndex = 0;
     private List<QuestionOptionModel> _questionOptions = new List<QuestionOptionModel>();
+    private SurveyModel _survey = new SurveyModel();
+    private int selectedAnswerId;
+    private List<QuestionOptionModel> _usersAnswers = new List<QuestionOptionModel>();
+    private bool isLast = false;
+
 
     protected override async Task OnInitializedAsync() {
         if (databaseCache.Questions == null) {
@@ -39,6 +58,7 @@
         if (_questions.Count > 0) {
             _questionOptions = await databaseCache.GetQuestionOptionsByQuestionId(CurrentQuestion.Id);
         }
+        _survey = await databaseCache.GetSurveyById(surveyId);
     }
 
     private QuestionModel CurrentQuestion => _questions[currentQuestionIndex];
@@ -52,6 +72,7 @@
         if (currentQuestionIndex < _questions.Count - 1) {
             currentQuestionIndex++;
             UpdateQuestionOptions();
+            isLast = isLastQuestion();
         }
     }
 
@@ -60,5 +81,38 @@
             currentQuestionIndex--;
             UpdateQuestionOptions();
         }
+    }
+
+    private void SelectAnswer(QuestionOptionModel answer) {
+        selectedAnswerId = answer.Id;
+    }
+
+    private async void AddAnswer() {
+        var answer = await databaseCache.GetQuestionOptionById(selectedAnswerId);
+        if(_usersAnswers.Count == 0) {
+            _usersAnswers.Add(answer);
+            NextQuestion();
+        }
+        else {
+            for(int i = 0; i <= _usersAnswers.Count-1; i++) {
+                if (answer.QuestionId == _usersAnswers[i].QuestionId) {
+                    var index = _usersAnswers.IndexOf(_usersAnswers[i]);
+                    _usersAnswers[index] = answer;
+                    NextQuestion();
+                }
+                else {
+                    _usersAnswers.Add(answer);
+                    NextQuestion();
+                }
+            }
+        }
+    }
+
+
+    private bool isLastQuestion() {
+        if (currentQuestionIndex == _questions.Count - 1)
+            return true;
+        else
+            return false;
     }
 }

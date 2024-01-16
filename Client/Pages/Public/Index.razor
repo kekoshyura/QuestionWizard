@@ -10,8 +10,8 @@
             <div class="col-lg-6 d-inline-flex flex-column bg-white-94 p-5 shadow-no-hover ">
                 <h1 class="d-inline-flex">Welcome</h1>
                 <p class="d-inline-flex">
-                    <a href="/questions" class="btn btn-primary shadow btn-lg fw-bold mt-3 md-f-size-1-5">
-                        <i class="fas fa-project-diagram"></i> Questions
+                    <a @onclick="GoToRandomSurvey" class="btn btn-primary shadow btn-lg fw-bold mt-3 md-f-size-1-5">
+                        <i class="fas fa-project-diagram"></i> Go to random survey!
                     </a>
                 </p>
             </div>
@@ -20,3 +20,27 @@
 </main>
 
 <Footer />
+
+
+@code {
+    [Inject] NavigationManager navigationManager { get; set; }
+    [Inject] DatabaseCache databaseCache { get; set; }
+
+    protected override async Task OnInitializedAsync() {
+        databaseCache.OnSurveysDataChanged += StateHasChanged;
+
+        if (databaseCache.Surveys == null) {
+            await databaseCache.GetSurveysFromDbCache();
+        }
+    }
+
+    private void GoToRandomSurvey() {
+        if (databaseCache.Surveys != null && databaseCache.Surveys.Count > 0) {
+            Random random = new Random();
+            int randomIndex = random.Next(0, databaseCache.Surveys.Count);
+            int randomSurveyId = databaseCache.Surveys[randomIndex].Id;
+
+            navigationManager.NavigateTo($"/questions/{randomSurveyId}");
+        }
+    }
+}
