@@ -19,6 +19,10 @@
                             <label for="categoryName">Question Option Text</label>
                             <InputText @bind-Value="_questionOptionToUpdate.Text" class="form-control" id="categoryName"></InputText>
                         </div>
+                        <div class="form-group mb-5">
+                            <label for="isCorrect">Is question option correct</label>
+                            <InputCheckbox id="myCheckbox" @bind-Value="_questionOptionToUpdate.IsCorrect" />
+                        </div>
                         
                         <ValidationSummary />
 

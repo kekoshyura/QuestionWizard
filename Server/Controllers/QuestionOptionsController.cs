@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
@@ -8,6 +9,7 @@ namespace Server.Controllers {
 
     [Route("api/[controller]")]
     [ApiController]
+
     public class QuestionOptionsController : ControllerBase {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
@@ -16,19 +18,23 @@ namespace Server.Controllers {
             _mapper = mapper;
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id) {
-            QuestionOptionModel section = await GetQuestionOptionById(id);
-            return Ok(section);
-        }
+
 
         #region CRUD operations
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Get() {
 
             List<QuestionOptionModel> questions = await _context.QuestionOptions.ToListAsync();
             return Ok(questions);
+        }
+
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Get(int id) {
+            QuestionOptionModel section = await GetQuestionOptionById(id);
+            return Ok(section);
         }
 
         [HttpPost]

@@ -2,8 +2,7 @@
 @using System.Net
 @using Client.Component.Admin
 
-<AuthorizeView Roles="Administrator">
-    <Authorized Context="Auth">
+>
         <main class="admin-area-main">
             <SideBar />
 
@@ -60,13 +59,8 @@
                 </div>
             </div>
         </main>
-    </Authorized>
 
-    <NotAuthorized>
-        <SignIn></SignIn>
-    </NotAuthorized>
-</AuthorizeView>
-
+   
 
 
 

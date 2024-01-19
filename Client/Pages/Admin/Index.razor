@@ -2,8 +2,7 @@
 @using Client.Component.Admin
 
 
-<AuthorizeView Roles="Administrator">
-    <Authorized Context="Auth">
+
         <main class="admin-area-main">
             <SideBar />
             <div class="admin-area-content container-fluid bg-lightgray white">
@@ -52,13 +51,8 @@
                 </div>
             </div>
         </main>
+    
 
-    </Authorized>
-
-    <NotAuthorized>
-       
-    </NotAuthorized>
-</AuthorizeView>
 
 
 
@@ -66,10 +60,10 @@
     [Inject] DatabaseCache databaseCache { get; set; }
 
     protected override async Task OnInitializedAsync() {
-        if(databaseCache.Sections == null) {
+        if (databaseCache.Sections == null) {
             await databaseCache.GetSectionsFromDbCache();
         }
-        if(databaseCache.Surveys == null) {
+        if (databaseCache.Surveys == null) {
             await databaseCache.GetSurveysFromDbCache();
         }
     }

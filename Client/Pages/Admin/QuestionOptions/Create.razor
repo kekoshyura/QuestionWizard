@@ -21,8 +21,12 @@
                                 <DataAnnotationsValidator />
 
                                 <div class="form-group mb-5">
-                                    <label for="questionName">Question Name</label>
-                                <InputText @bind-Value="_questionOptionToCreate.Text" class="form-control" id="questionName"></InputText>
+                                    <label for="questionName">Question Option Name</label>
+                                    <InputText @bind-Value="_questionOptionToCreate.Text" class="form-control" id="questionName"></InputText>
+                                </div>
+                                <div class="form-group mb-5">
+                                    <label for="isCorrect">Is question option correct</label>
+                                    <InputCheckbox  id="myCheckbox" @bind-Value="_questionOptionToCreate.IsCorrect" />
                                 </div>
                                
                                 <ValidationSummary />

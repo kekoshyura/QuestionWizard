@@ -32,6 +32,10 @@ body{
     padding: 10vh;
 }
 
+.fixed-height-image {
+    height: 200px; 
+    object-fit: cover;
+}
 
 
 .bg-lightgray {

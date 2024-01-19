@@ -8,7 +8,6 @@ using Server.Data;
 namespace Server.Controllers {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Administrator")]
     public class SectionsController : ControllerBase {
         private readonly DataContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;

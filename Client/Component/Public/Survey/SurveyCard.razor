@@ -1,10 +1,10 @@
 ﻿
 <div class="card shadow mb-2">
+    <img src="@($"{ApiEndpoints.ServerBaseUrl}/{Survey.SurveyImagePath}")" class="card-img-top fixed-height-image" alt="Survey thumbnail image" />
     <div class="card-body">
         <h3 class="card-title">@Survey.Title</h3>
         <p class="card-text">@Survey.Description</p>
     </div>
-
     
     <button onclick="@NavigateToSurveys" class="btn btn-primary stretched-link">View section</button>
 </div>

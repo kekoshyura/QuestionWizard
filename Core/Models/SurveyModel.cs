@@ -10,6 +10,7 @@ namespace Core.Models {
 
         [NoThreeMoreSpacesInARow(ErrorMessage = "The category description contains three or more spaces. Please, remove them")]
         public string Description { get; set; }
+        public string SurveyImagePath { get; set; }
 
         [Required]
         public int SectionId { get; set; }

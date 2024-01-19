@@ -38,6 +38,29 @@
                                 </InputSelect>
                             </div>
                         }
+                        <br />
+                        <div class="form-group mb-5">
+                            <label for="sectionImage">Survey image(jpg-jpeg or png 1920*1080)</label>
+
+                            @if (_attempingToUplaodImage == true) {
+                                <LoadingDot />
+                            }
+                            else if (_attempToUploadFailed == true) {
+                                <h4 class="text-danger">Faild to upload image. @_reasonImageUploadFailed</h4>
+                            }
+                            else {
+                                @if (string.IsNullOrEmpty(_surveyToCreate.SurveyImagePath)) {
+                                    <img src="/assets/img/other/36421940-placeholder.jpg" class="admin-crud-form-thumbnail-image" alt="Post survey image" />
+                                }
+                                else {
+                                    <img src="@($"{ApiEndpoints.ServerBaseUrl}/{_surveyToCreate.SurveyImagePath}")" class="admin-crud-form-thumbnail-image" alt="Post survey image" />
+                                }
+                            }
+
+
+
+                            <InputFile OnChange="HandleUploadImage" class="form-control mt-4" id="sectionImage"></InputFile>
+                        </div>
                         
                         <ValidationSummary />
 
@@ -88,5 +111,46 @@
         }
         _attempingToCreate = false;
         StateHasChanged();
+    }
+
+    private bool _attempingToUplaodImage = false;
+    private bool _attempToUploadFailed = false;
+    private string _reasonImageUploadFailed = null;
+
+    private async Task HandleUploadImage(InputFileChangeEventArgs e) {
+        _attempingToUplaodImage = true;
+        if (e.File.ContentType != "image/jpeg" && e.File.ContentType != "image/png") {
+            _reasonImageUploadFailed = "Please only upload JPEG, JPG or PNG images";
+            _attempToUploadFailed = true;
+        }
+        else if (e.File.Size >= 31457280)// 31457280byte == 30 megaBytes
+        {
+            _reasonImageUploadFailed = "Please only upload images that are smaller than 30 megaBytes(MB).";
+            _attempToUploadFailed = true;
+        }
+        else {
+            IBrowserFile uploadedImageFile = e.File;
+            byte[] imageAsByteArray = new byte[uploadedImageFile.Size];
+            await uploadedImageFile.OpenReadStream(31457280).ReadAsync(imageAsByteArray);
+            string byteString = Convert.ToBase64String(imageAsByteArray);
+
+            UploadedImage uploadedImage = new UploadedImage() {
+                    NewImageFileExtensions = uploadedImageFile.Name.Substring(uploadedImageFile.Name.Length - 4),
+                    NewImageBase64Content = byteString,
+                    OldImagePath = string.Empty
+                };
+
+            HttpResponseMessage response = await httpClient.PostAsJsonAsync<UploadedImage>(ApiEndpoints.s_imageUpload, uploadedImage);
+            if (response.StatusCode == HttpStatusCode.Created) {
+                _surveyToCreate.SurveyImagePath = await response.Content.ReadAsStringAsync();
+            }
+            else {
+                _reasonImageUploadFailed = $"Something went wrong when making a request to the server. Server response status code: {response.StatusCode}. Server reason: {response.ReasonPhrase}.";
+                _attempToUploadFailed = true;
+            }
+
+            _attempingToUplaodImage = false;
+            StateHasChanged();
+        }
     }
 }

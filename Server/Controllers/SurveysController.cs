@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
@@ -7,6 +8,7 @@ using Server.Data;
 namespace Server.Controllers {
     [Route("api/[controller]")]
     [ApiController]
+
     public class SurveysController : ControllerBase {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
@@ -34,6 +36,7 @@ namespace Server.Controllers {
 
         #region CRUD operations
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Get() {
 
             List<SurveyModel> sections = await _context.Surveys
@@ -47,6 +50,7 @@ namespace Server.Controllers {
 
 
         [HttpGet("dto/{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetDTO(int id) {
             SurveyModel survey = await GetSurveyById(id);
             SurveyDTO surveyDTO = _mapper.Map<SurveyDTO>(survey);
@@ -54,6 +58,7 @@ namespace Server.Controllers {
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> Get(int id) {
             SurveyModel section = await GetSurveyById(id);
             return Ok(section);

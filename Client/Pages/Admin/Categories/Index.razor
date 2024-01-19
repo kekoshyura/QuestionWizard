@@ -39,7 +39,7 @@
                                 <thead>
                                     <tr>
                                         <th scope="col">Name</th>
-                                        <th scope="col">Thumbnail</th>
+                                        <th scope="col">Category image</th>
                                         <th scope="col">Description</th>
                                         <th scope="col">Actions</th>
                                     </tr>
@@ -51,7 +51,7 @@
                                                 <p>@category.Title</p>
                                             </th>
                                             <td class="w-35">
-                                                <img src="/assets//img/other/36421940-placeholder.jpg" class="admin-index-thumbnail-image" alt="Category image">
+                                                <img src="@($"{ApiEndpoints.ServerBaseUrl}/{category.SectionImagePath}")" class="admin-index-thumbnail-image" alt="Category image">
                                             </td>
                                             <td class="w-15">
                                                 <p>@category.Description</p>

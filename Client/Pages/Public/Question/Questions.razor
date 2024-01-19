@@ -19,21 +19,36 @@
             <LoadingDot />
         }
         else {
-            <h2 class="mb-4">@CurrentQuestion.Text</h2>
-            <form>
-                @foreach (var answer in CurrentQuestionOptions) {
-                    <div class="mb-2">
-                        <input type="radio" id="@answer.Id" name="selectedAnswer" @onchange="(() => SelectAnswer(answer))" />
-                        <label for="@answer.Id" class="ml-2">@answer.Text</label>
+            @if (percentageOfCorrect == 0.1) {
+                <h2 class="mb-4">@CurrentQuestion.Text</h2>
+                <form>
+                    @foreach (var answer in CurrentQuestionOptions) {
+                        <div class="mb-2">
+                            <input type="radio" id="@answer.Id" name="selectedAnswer" checked="@IsAnswerSelected(answer.Id)" @onchange="(() => SelectAnswer(answer))" />
+                            <label for="@answer.Id" class="ml-2">@answer.Text</label>
+                        </div>
+                    }
+                </form>
+                <div class="d-flex justify-content-between">
+                    <button @onclick="PreviousQuestion" class="btn btn-outline-dark" disabled="@(currentQuestionIndex == 0)">Previous</button>
+                    @if (!isLast) {
+                        <button @onclick="AddAnswer" class="btn btn-outline-success" disabled="@(selectedAnswerId == 0)">Reply</button>
+                    }
+                    else {
+                        <button @onclick="ScoreCount" class="btn btn-outline-success" disabled="@(selectedAnswerId == 0)">Finish</button>
+                    }
+                    <button @onclick="NextQuestion" class="btn btn-outline-dark" disabled="@(currentQuestionIndex == _questions.Count - 1)">Next</button>
+                </div>
+            }
+            else {
+                <label >You answered @percentageOfCorrect % of the questions correctly</label>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: @((int)percentageOfCorrect)%; color: green; background-color: green">
+                        @percentageOfCorrect%
                     </div>
-                }
-            </form>
-
-            <div class="d-flex justify-content-between">
-                <button @onclick="PreviousQuestion" class="btn btn-outline-dark" disabled="@(currentQuestionIndex == 0)">Previous</button>
-                <button @onclick="AddAnswer" class="btn btn-outline-success"> @(isLast ? "Finish" : "Reply")</button>
-                <button @onclick="NextQuestion" class="btn btn-outline-dark" disabled="@(currentQuestionIndex == _questions.Count - 1)">Next</button>
-            </div>
+                </div>
+            }
+           
         }
     </div>
 </main>
@@ -48,7 +63,8 @@
     private int selectedAnswerId;
     private List<QuestionOptionModel> _usersAnswers = new List<QuestionOptionModel>();
     private bool isLast = false;
-
+    private double percentageOfCorrect = 0.1;
+    private bool finishSurvey = false;
 
     protected override async Task OnInitializedAsync() {
         if (databaseCache.Questions == null) {
@@ -91,21 +107,20 @@
         var answer = await databaseCache.GetQuestionOptionById(selectedAnswerId);
         if(_usersAnswers.Count == 0) {
             _usersAnswers.Add(answer);
-            NextQuestion();
         }
         else {
-            for(int i = 0; i <= _usersAnswers.Count-1; i++) {
-                if (answer.QuestionId == _usersAnswers[i].QuestionId) {
-                    var index = _usersAnswers.IndexOf(_usersAnswers[i]);
-                    _usersAnswers[index] = answer;
-                    NextQuestion();
-                }
-                else {
-                    _usersAnswers.Add(answer);
-                    NextQuestion();
-                }
+            var existingAnswer = _usersAnswers.FirstOrDefault(a => a.QuestionId == answer.QuestionId);
+            if (existingAnswer != null) {
+                // Якщо відповідь для поточного питання вже є, замініть її
+                var index = _usersAnswers.IndexOf(existingAnswer);
+                _usersAnswers[index] = answer;
+            }
+            else {
+                _usersAnswers.Add(answer);
             }
         }
+        selectedAnswerId = 0;
+        NextQuestion();
     }
 
 
@@ -115,4 +130,20 @@
         else
             return false;
     }
+
+    private void ScoreCount() {
+        AddAnswer();
+        var countOfCorrect = 0;
+        foreach (var answ in _usersAnswers) {
+            if (answ.IsCorrect) {
+                countOfCorrect++;
+            }
+        }
+        percentageOfCorrect = Math.Round((double)countOfCorrect / _questions.Count * 100, 1);
+    }
+
+    private bool IsAnswerSelected(int answerId) {
+        return selectedAnswerId == answerId;
+    }
+
 }

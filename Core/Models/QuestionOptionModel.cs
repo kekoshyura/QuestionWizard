@@ -7,6 +7,7 @@ namespace Core.Models {
 
         [NoThreeMoreSpacesInARow(ErrorMessage = "The category description contains three or more spaces. Please, remove them")]
         public string Text { get; set; }
+        public bool IsCorrect { get; set; }
 
         [Required]
         public int QuestionId { get; set; }

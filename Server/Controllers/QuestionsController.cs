@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
@@ -7,6 +8,7 @@ using Server.Data;
 namespace Server.Controllers {
     [Route("api/[controller]")]
     [ApiController]
+
     public class QuestionsController : ControllerBase {
 
         private readonly DataContext _context;
@@ -19,6 +21,7 @@ namespace Server.Controllers {
 
         #region CRUD operations
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Get() {
 
             List<QuestionModel> questions = await _context.Questions
@@ -29,6 +32,7 @@ namespace Server.Controllers {
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> Get(int id) {
             QuestionModel section = await GetQuestionById(id);
             return Ok(section);

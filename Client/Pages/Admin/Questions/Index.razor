@@ -12,6 +12,9 @@
         }else{
             @if (_questions.Count == 0) {
                 <h1>Questions have not been added yet</h1>
+                <a href="/admin/questions/create/@_survey.Id" class="btn btn-success shadow me-5 md-f-size-1-5">
+                    <i class="fas fa-plus"></i>Create Question
+                </a>
             }
             else {
                 <div class="row g-0">
